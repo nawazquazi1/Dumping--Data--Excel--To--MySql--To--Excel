@@ -4,11 +4,16 @@ import com.api.entity.Product;
 import com.api.helper.Helper;
 import com.api.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -37,4 +42,15 @@ public class ProductController {
         return this.productService.getAllProducts();
     }
 
+    @GetMapping("/product/create")
+    public ResponseEntity<Resource> download() {
+        String fileName = "product.xlsx";
+        ByteArrayInputStream data = productService.getActualData();
+        InputStreamResource file = new InputStreamResource(data);
+        ResponseEntity<Resource> body = ResponseEntity.ok().
+                header
+                        (HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName).
+                contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
+        return body;
+    }
 }

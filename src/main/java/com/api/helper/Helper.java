@@ -3,16 +3,30 @@ package com.api.helper;
 import com.api.entity.Product;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class Helper {
+
+    public static String[] HEADERS = {
+            "id"
+            , "productName"
+            , "productDesc"
+            , "productPrice"
+    };
+
+    public static String SHEET_NAME = "ProductData";
 
 
     //check that file is of excel type or not
@@ -66,6 +80,39 @@ public class Helper {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public static ByteArrayInputStream dataToExcel(List<Product> products) {
+        //create work book
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream stream = new ByteArrayOutputStream();) {
+            //create sheet
+            Sheet sheet = workbook.createSheet(SHEET_NAME);
+
+            Row row = sheet.createRow(0);
+            for (int i = 0; i < HEADERS.length; i++) {
+                Cell cell = row.createCell(i);
+                cell.setCellValue(HEADERS[i]);
+            }
+            //value rows
+            int rowIndex = 0;
+            for (Product p : products) {
+                rowIndex++;
+                Row dataRow = sheet.createRow(rowIndex);
+
+                dataRow.createCell(0).setCellValue(p.getProductId());
+                dataRow.createCell(1).setCellValue(p.getProductName());
+                dataRow.createCell(2).setCellValue(p.getProductDesc());
+                dataRow.createCell(3).setCellValue(p.getProductDesc());
+
+            }
+            workbook.write(stream);
+            return new ByteArrayInputStream(stream.toByteArray());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
